@@ -1,4 +1,4 @@
-﻿# Projektplan Videoflix
+# Projektplan Videoflix
 
 ## Aktueller Ausgangspunkt
 
@@ -15,8 +15,8 @@ Das GitHub-Repository ist erstellt und lokal geklont. Die Backend-Implementierun
 
 Issue `#1` muss die Projektgrundlage herstellen:
 
-1. vorgegebene Docker-Dateien aus dem Docker-Repository unveraendert uebernehmen
-2. `.env.template` aus der Vorlage uebernehmen
+1. vorgegebene Docker-Dateien aus dem Docker-Repository unverändert übernehmen
+2. `.env.template` aus der Vorlage übernehmen
 3. `.env` in `.gitignore` eintragen
 4. Projekt mit `uv` und Python 3.12 initialisieren
 5. Django-Projekt mit dem Namen `core` erstellen
@@ -31,17 +31,17 @@ Issue `#1` muss die Projektgrundlage herstellen:
 - Paketverwaltung lokal: uv
 - Docker-Installation: `pip install -r requirements.txt`
 - Datenbank: PostgreSQL
-- Cache und Queue: Redis, getrennte Datenbanken fuer Cache und Django-RQ
+- Cache und Queue: Redis, getrennte Datenbanken für Cache und Django-RQ
 - Hintergrundjobs: Django-RQ
-- Codequalitaet: Ruff mit Importsortierung, PEP-8-Regeln, snake_case, ungenutzten Imports/Variablen und D101
+- Codequalität: Ruff mit Importsortierung, PEP-8-Regeln, snake_case, ungenutzten Imports/Variablen und D101
 
 ## Wichtige Architekturregeln
 
-- Das Django-Projekt muss `core` heissen, weil Docker `gunicorn core.wsgi:application` startet.
-- Die Docker-Dateien aus der Akademie-Vorlage werden nicht veraendert.
-- Das Backend-Repository enthaelt nur das Backend, nicht das Frontend.
+- Das Django-Projekt muss `core` heißen, weil Docker `gunicorn core.wsgi:application` startet.
+- Die Docker-Dateien aus der Akademie-Vorlage werden nicht verändert.
+- Das Backend-Repository enthält nur das Backend, nicht das Frontend.
 - Das Custom-User-Modell muss vor der ersten Migration angelegt werden.
-- Das User-Modell behaelt `username`, damit der Docker-Superuser funktioniert.
+- Das User-Modell behält `username`, damit der Docker-Superuser funktioniert.
 - Nutzer melden sich fachlich per E-Mail an.
 
 ## Definition of Done
