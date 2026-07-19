@@ -1,0 +1,333 @@
+[
+    {
+        "title": "Authentication",
+        "description": "Login und Registrierung",
+        "endpoints": [
+            {
+                "method": "POST",
+                "path": "/api/register/",
+                "description": "Registriert einen neuen Benutzer im System.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {
+                    "email": "user@example.com",
+                    "password": "securepassword",
+                    "confirmed_password": "securepassword"
+                },
+                "responseDescr": "Nach erfolgreicher Registrierung wird eine Aktivierungs-E-Mail versendet. Der Response inkl. dem Token hat keine Verwendung im FrontEnd, da wir hier mit HTTP-ONLY-COOKIES arbeiten. Dieser ist zur Demonstration und Information für Dich.",
+                "response": {
+                    "user": {
+                        "id": 1,
+                        "email": "user@example.com"
+                    },
+                    "token": "activation_token"
+                },
+                "statusCodes": {
+                    "201": "Benutzer erfolgreich erstellt."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "",
+                "extraInformation": "Konto bleibt inaktiv bis Aktivierung via E-Mail."
+            },
+            {
+                "method": "GET",
+                "path": "/api/activate/&lt;uidb64&gt;/&lt;token&gt;/",
+                "description": "Aktiviert das Benutzerkonto mithilfe des per E-Mail gesendeten Tokens.",
+                "urlParameters": [
+                    {
+                        "name": "uidb64",
+                        "type": "",
+                        "description": "Base64-codierte Benutzer-ID"
+                    },
+                    {
+                        "name": "token",
+                        "type": "",
+                        "description": "Aktivierungstoken"
+                    }
+                ],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "Aktivierungsstatusnachricht.",
+                "response": {
+                    "message": "Account successfully activated."
+                },
+                "statusCodes": {
+                    "200": "Account erfolgreich aktiviert.",
+                    "400": "Aktivierung fehlgeschlagen."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "",
+                "extraInformation": ""
+            },
+            {
+                "method": "POST",
+                "path": "/api/login/",
+                "description": "Authentifiziert den Benutzer und gibt JWT-Tokens zurück.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {
+                    "email": "user@example.com",
+                    "password": "securepassword"
+                },
+                "responseDescr": "JWT-Tokens, Benutzerinformationen und Cookies werden gesetzt. Der Response hat keine Verwendung im FrontEnd, da wir hier mit HTTP-ONLY-COOKIES arbeiten. Dieser ist zur Demonstration und Information für Dich.",
+                "response": {
+                    "detail": "Login successful",
+                    "user": {
+                        "id": 1,
+                        "username": "user@example.com"
+                    }
+                },
+                "statusCodes": {
+                    "200": "Login erfolgreich."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "",
+                "extraInformation": "Setzt HttpOnly-Cookies: access_token & refresh_token. Der access_token dient zur Authentifizierung bei API-Anfragen. Der refresh_token wird verwendet, um ein neuen Zugangstoken zu erhalten."
+            },
+            {
+                "method": "POST",
+                "path": "/api/logout/",
+                "description": "Meldet den Benutzer ab, indem der Refresh-Token ungültig gemacht wird.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "",
+                "response": {
+                    "detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."
+                },
+                "statusCodes": {
+                    "200": "Logout erfolgreich.",
+                    "400": "Refresh-Token fehlt."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "Refresh-Token-Cookie erforderlich",
+                "extraInformation": "Löscht die Cookies access_token und refresh_token. Der Refresh-Token wird auf eine Blackalist gesetzt."
+            },
+            {
+                "method": "POST",
+                "path": "/api/token/refresh/",
+                "description": "Gibt ein neues Zugangstoken aus, wenn der alte Access-Token abgelaufen ist. Der Token im Response hat keine Verwendung für das FrontEnd da wir hier mit HTTP-ONLY-COOKIES arbeiten. Dieser ist nur zur Demonstration und Information für Dich.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "Neuer Access-Token.",
+                "response": {
+                    "detail": "Token refreshed",
+                    "access": "new_access_token"
+                },
+                "statusCodes": {
+                    "200": "Access-Token wurde erneuert.",
+                    "400": "Refresh-Token fehlt.",
+                    "401": "Ungültiger Refresh-Token."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "Refresh-Token-Cookie erforderlich",
+                "extraInformation": "Setzt neuen access_token-Cookie. Der refresh_token muss im Cookie vorhanden und gültig sein."
+            },
+            {
+                "method": "POST",
+                "path": "/api/password_reset/",
+                "description": "Sendet einen Link zum Zurücksetzen des Passworts an die E-Mail des Benutzers.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {
+                    "email": "user@example.com"
+                },
+                "responseDescr": "Bestätigt, dass eine E-Mail zum Zurücksetzen gesendet wurde.",
+                "response": {
+                    "detail": "An email has been sent to reset your password."
+                },
+                "statusCodes": {
+                    "200": "Reset-E-Mail wurde versendet."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "Keine Authentifizierung erforderlich",
+                "extraInformation": "Nur möglich, wenn ein Benutzer mit dieser E-Mail existiert."
+            },
+            {
+                "method": "POST",
+                "path": "/api/password_confirm/&lt;uidb64&gt;/&lt;token&gt;/",
+                "description": "Bestätigt die Passwortänderung mit dem in der E-Mail enthaltenen Token.",
+                "urlParameters": [
+                    {
+                        "name": "uidb64",
+                        "type": "",
+                        "description": "Base64-codierte Benutzer-ID"
+                    },
+                    {
+                        "name": "token",
+                        "type": "",
+                        "description": "Token zur Passwort-Zurücksetzung"
+                    }
+                ],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {
+                    "new_password": "newsecurepassword",
+                    "confirm_password": "newsecurepassword"
+                },
+                "responseDescr": "Bestätigung über erfolgreiche Passwortänderung.",
+                "response": {
+                    "detail": "Your Password has been successfully reset."
+                },
+                "statusCodes": {
+                    "200": "Passwort erfolgreich geändert."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "Keine Authentifizierung erforderlich",
+                "extraInformation": ""
+            }
+        ]
+    },
+    {
+        "title": "Video",
+        "description": "Videoanzeige, Streaming und Segmentbereitstellung",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/video/",
+                "description": "Gibt eine Liste aller verfügbaren Videos zurück.",
+                "urlParameters": [],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "Enthält eine Liste mit Metadaten zu allen Videos.",
+                "response": [
+                    {
+                        "id": 1,
+                        "created_at": "2023-01-01T12:00:00Z",
+                        "title": "Movie Title",
+                        "description": "Movie Description",
+                        "thumbnail_url": "http://example.com/media/thumbnail/image.jpg",
+                        "category": "Drama"
+                    },
+                    {
+                        "id": 2,
+                        "created_at": "2023-01-02T12:00:00Z",
+                        "title": "Another Movie",
+                        "description": "Another Description",
+                        "thumbnail_url": "http://example.com/media/thumbnail/image2.jpg",
+                        "category": "Romance"
+                    }
+                ],
+                "statusCodes": {
+                    "200": "Liste erfolgreich zurückgegeben.",
+                    "401": "Nicht authentifiziert.",
+                    "500": "Interner Serverfehler."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "JWT-Authentifizierung erforderlich",
+                "extraInformation": ""
+            },
+            {
+                "method": "GET",
+                "path": "/api/video/&lt;int:movie_id&gt;/&lt;str:resolution&gt;/index.m3u8",
+                "description": "Gibt die HLS-Master-Playlist für einen bestimmten Film und eine gewählte Auflösung zurück.",
+                "urlParameters": [
+                    {
+                        "name": "movie_id",
+                        "type": "integer",
+                        "description": "Die ID des Filmes."
+                    },
+                    {
+                        "name": "resolution",
+                        "type": "string",
+                        "description": "Gewünschte Auflösung (z.B. '480p', '720p', '1080p')."
+                    }
+                ],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "HLS-Manifestdatei (Content-Type: application/vnd.apple.mpegurl). Body enthält HLS-Manifestdatei im M3U8-Format.",
+                "response": "",
+                "statusCodes": {
+                    "200": "Manifest erfolgreich geliefert.",
+                    "404": "Video oder Manifest nicht gefunden."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "JWT-Authentifizierung erforderlich",
+                "extraInformation": ""
+            },
+            {
+                "method": "GET",
+                "path": "/api/video/&lt;int:movie_id&gt;/&lt;str:resolution&gt;/&lt;str:segment&gt;/",
+                "description": "Gibt ein einzelnes HLS-Videosegment für einen bestimmten Film in gewählter Auflösung zurück.",
+                "urlParameters": [
+                    {
+                        "name": "movie_id",
+                        "type": "integer",
+                        "description": "ID des Films."
+                    },
+                    {
+                        "name": "resolution",
+                        "type": "string",
+                        "description": "Gewünschte Auflösung (z.B. '480p', '720p', '1080p')."
+                    },
+                    {
+                        "name": "segment",
+                        "type": "string",
+                        "description": "Dateiname des Segments (z.B. '000.ts')."
+                    }
+                ],
+                "queryParameters": [],
+                "requestDescr": "",
+                "requestBody": {},
+                "responseDescr": "Binäre TS-Datei (Content-Type: video/MP2T). Body enthält binäre Videodaten",
+                "response": "",
+                "statusCodes": {
+                    "200": "Segment erfolgreich geliefert.",
+                    "404": "Video oder Segment nicht gefunden."
+                },
+                "rateLimits": {
+                    "noLimit": true,
+                    "limit": 0,
+                    "timeWindow": ""
+                },
+                "permissions": "JWT-Authentifizierung erforderlich",
+                "extraInformation": ""
+            }
+        ]
+    }
+]
