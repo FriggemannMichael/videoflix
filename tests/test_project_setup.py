@@ -7,6 +7,10 @@ def test_django_rq_is_registered():
     assert apps.is_installed('django_rq')
 
 
+def test_rest_framework_is_registered():
+    assert apps.is_installed('rest_framework')
+
+
 def test_admin_url_is_registered():
     assert reverse('admin:index') == '/admin/'
 
