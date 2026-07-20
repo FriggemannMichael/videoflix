@@ -7,6 +7,7 @@ dependencies = [
     "django-redis>=7.0.0",
     "django-rq>=4.1.1",
     "djangorestframework>=3.17.1",
+    "djangorestframework-simplejwt>=5.5.1",
     "gunicorn>=26.0.0",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
@@ -15,6 +16,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "djangorestframework-stubs>=3.17.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "pytest-django>=4.12.0",
