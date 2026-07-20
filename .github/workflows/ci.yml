@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: videoflix_db
+          POSTGRES_USER: videoflix_user
+          POSTGRES_PASSWORD: supersecretpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U videoflix_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ci-test-secret-key
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DB_NAME: videoflix_db
+      DB_USER: videoflix_user
+      DB_PASSWORD: supersecretpassword
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      REDIS_HOST: 127.0.0.1
+      REDIS_LOCATION: redis://127.0.0.1:6379/1
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Django system check
+        run: python manage.py check
+
+      - name: Run tests
+        run: pytest
+
+      - name: Prepare API smoke test database
+        run: python manage.py migrate --noinput
+
+      - name: Start Django API server
+        run: |
+          python manage.py runserver 127.0.0.1:8000 > django.log 2>&1 &
+          echo $! > django.pid
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/admin/login/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat django.log
+          exit 1
+
+      - name: Run Postman smoke tests
+        run: |
+          npx --yes newman@6.2.1 run tests/postman/videoflix-api.postman_collection.json \
+            --env-var baseUrl=http://127.0.0.1:8000
+
+      - name: Check size limits
+        run: python tests/scripts/check_size_limits.py

@@ -12,3 +12,38 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "whitenoise>=6.12.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pytest-django>=4.12.0",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-rxX",
+    "--cov=.",
+    "--cov-branch",
+    "--cov-report=term-missing",
+]
+
+[tool.coverage.run]
+omit = [
+    ".venv/*",
+    "*/migrations/*",
+    "tests/*",
+    "*/__init__.py",
+    "manage.py",
+    "core/asgi.py",
+    "core/wsgi.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

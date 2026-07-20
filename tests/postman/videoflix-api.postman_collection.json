@@ -1,0 +1,51 @@
+{
+  "info": {
+    "_postman_id": "8c1f4a2e-3b7d-4c9a-9e5f-2d6b8a0c1e47",
+    "name": "Videoflix API Smoke Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Admin login page is reachable",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/login/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "admin",
+            "login",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('renders the Django admin login form', function () {",
+              "  pm.expect(pm.response.text()).to.include('id_username');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
