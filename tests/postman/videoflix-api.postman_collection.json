@@ -63,6 +63,77 @@
       ]
     },
     {
+      "name": "Refresh token without cookie",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/token/refresh/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "token",
+            "refresh",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 400 Bad Request', function () {",
+              "  pm.response.to.have.status(400);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh token with invalid cookie",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "refresh_token=not-a-real-token"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/token/refresh/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "token",
+            "refresh",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 401 Unauthorized', function () {",
+              "  pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Register user",
       "request": {
         "method": "POST",
@@ -215,6 +286,57 @@
               "  pm.expect(setCookieHeaders).to.include('access_token=');",
               "  pm.expect(setCookieHeaders).to.include('refresh_token=');",
               "  pm.expect(setCookieHeaders).to.include('HttpOnly');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/token/refresh/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "token",
+            "refresh",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "const setCookieHeaders = pm.response.headers",
+              "  .all()",
+              "  .filter((header) => header.key.toLowerCase() === 'set-cookie')",
+              "  .map((header) => header.value)",
+              "  .join('; ');",
+              "",
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns a new access token', function () {",
+              "  pm.expect(body.detail).to.eql('Token refreshed');",
+              "  pm.expect(body.access).to.be.a('string');",
+              "});",
+              "",
+              "pm.test('sets a new HttpOnly access token cookie', function () {",
+              "  pm.expect(setCookieHeaders).to.include('access_token=');",
+              "  pm.expect(setCookieHeaders).to.include('HttpOnly');",
+              "  pm.expect(setCookieHeaders).to.not.include('refresh_token=');",
               "});"
             ]
           }
