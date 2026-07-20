@@ -1,0 +1,65 @@
+name: Docker
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  compose-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create .env from template
+        run: cp .env.template .env
+
+      - name: Build the backend image
+        run: docker compose build
+
+      - name: Start the stack
+        run: docker compose up -d
+
+      - name: Wait for the backend
+        run: |
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8000/admin/login/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+
+      - name: Check static file delivery
+        run: curl --fail --silent --output /dev/null http://127.0.0.1:8000/static/admin/css/base.css
+
+      - name: Check database connection
+        run: |
+          docker compose exec -T web python manage.py shell -c \
+            "from django.db import connection; connection.ensure_connection(); print('database ok')"
+
+      - name: Check redis cache
+        run: |
+          docker compose exec -T web python manage.py shell -c \
+            "from django.core.cache import cache; cache.set('ci_smoke', 'ok', 10); assert cache.get('ci_smoke') == 'ok'; print('redis ok')"
+
+      - name: Check superuser creation
+        run: |
+          docker compose exec -T web python manage.py shell -c \
+            "from django.contrib.auth import get_user_model; assert get_user_model().objects.filter(is_superuser=True).exists(); print('superuser ok')"
+
+      - name: Run tests inside the container
+        run: docker compose exec -T web pytest
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v
