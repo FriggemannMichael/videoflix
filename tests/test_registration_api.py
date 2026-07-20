@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -32,6 +33,23 @@ def test_register_creates_inactive_user(api_client, valid_payload):
     assert user.check_password('Str0ng-test-pass!')
     assert user.is_active is False
     assert user.privacy_policy_accepted_at is not None
+
+
+@pytest.mark.django_db
+def test_register_sends_activation_email(api_client, valid_payload, settings):
+    settings.FRONTEND_URL = 'http://localhost:5500'
+
+    response = api_client.post(reverse('register'), valid_payload, format='json')
+
+    token = response.json()['token']
+    assert len(mail.outbox) == 1
+    email = mail.outbox[0]
+    assert email.to == ['new-user@example.com']
+    assert email.subject
+    assert token in email.body
+    assert 'http://localhost:5500/pages/auth/activate.html?uid=' in email.body
+    html_body = email.alternatives[0][0]
+    assert token in html_body
 
 
 @pytest.mark.django_db
