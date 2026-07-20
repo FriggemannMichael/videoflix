@@ -4,6 +4,21 @@
     "name": "Videoflix API Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('email')) {",
+          "  const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;",
+          "  pm.collectionVariables.set('email', `ci_user_${suffix}@example.com`);",
+          "  pm.collectionVariables.set('password', 'Str0ng-test-pass!');",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
     {
       "key": "baseUrl",
@@ -41,6 +56,213 @@
               "",
               "pm.test('renders the Django admin login form', function () {",
               "  pm.expect(pm.response.text()).to.include('id_username');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register user",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"confirmed_password\": \"{{password}}\",\n  \"privacy_policy\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/register/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "register",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "",
+              "pm.test('returns 201 Created', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('returns the inactive user and an activation token', function () {",
+              "  pm.expect(body.user.email).to.eql(pm.collectionVariables.get('email'));",
+              "  pm.expect(body.token).to.be.a('string');",
+              "});",
+              "",
+              "const uidb64 = btoa(String(body.user.id))",
+              "  .replace(/\\+/g, '-')",
+              "  .replace(/\\//g, '_')",
+              "  .replace(/=+$/, '');",
+              "pm.collectionVariables.set('uid', uidb64);",
+              "pm.collectionVariables.set('activationToken', body.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activate user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/activate/{{uid}}/{{activationToken}}/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "activate",
+            "{{uid}}",
+            "{{activationToken}}",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('confirms activation', function () {",
+              "  pm.expect(pm.response.json()).to.eql({",
+              "    message: 'Account successfully activated.'",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login user",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "const setCookieHeaders = pm.response.headers",
+              "  .all()",
+              "  .filter((header) => header.key.toLowerCase() === 'set-cookie')",
+              "  .map((header) => header.value)",
+              "  .join('; ');",
+              "",
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns the logged-in user payload', function () {",
+              "  pm.expect(body.detail).to.eql('Login successful');",
+              "  pm.expect(body.user.username).to.eql(pm.collectionVariables.get('email'));",
+              "});",
+              "",
+              "pm.test('does not expose tokens in the response body', function () {",
+              "  pm.expect(body).to.not.have.property('access');",
+              "  pm.expect(body).to.not.have.property('refresh');",
+              "});",
+              "",
+              "pm.test('sets HttpOnly auth cookies', function () {",
+              "  pm.expect(setCookieHeaders).to.include('access_token=');",
+              "  pm.expect(setCookieHeaders).to.include('refresh_token=');",
+              "  pm.expect(setCookieHeaders).to.include('HttpOnly');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login rejects wrong password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"definitely-wrong\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 400 Bad Request', function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('does not set auth cookies', function () {",
+              "  const setCookieHeaders = pm.response.headers",
+              "    .all()",
+              "    .filter((header) => header.key.toLowerCase() === 'set-cookie');",
+              "  pm.expect(setCookieHeaders).to.have.lengthOf(0);",
               "});"
             ]
           }
