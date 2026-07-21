@@ -12,6 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.cookies import (
     REFRESH_TOKEN_COOKIE_NAME,
+    delete_auth_cookies,
     set_access_token_cookie,
     set_auth_cookies,
 )
@@ -80,6 +81,39 @@ class LoginView(APIView):
             }
         )
         set_auth_cookies(response, str(refresh.access_token), str(refresh))
+        return response
+
+
+LOGOUT_SUCCESS_DETAIL = (
+    'Logout successful! All tokens will be deleted. Refresh token is now invalid.'
+)
+
+
+class LogoutView(APIView):
+    """Blacklist the refresh token and clear both auth cookies."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        raw_token = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
+        if raw_token is None:
+            return Response(
+                {'detail': 'Refresh token is missing.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return self._logout_response(raw_token)
+
+    @staticmethod
+    def _logout_response(raw_token):
+        try:
+            RefreshToken(raw_token).blacklist()
+        except TokenError:
+            return Response(
+                {'detail': 'Invalid or expired refresh token.'},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        response = Response({'detail': LOGOUT_SUCCESS_DETAIL})
+        delete_auth_cookies(response)
         return response
 
 

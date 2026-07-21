@@ -16,6 +16,12 @@ def set_access_token_cookie(response, access_token):
     _set_cookie(response, ACCESS_TOKEN_COOKIE_NAME, access_token)
 
 
+def delete_auth_cookies(response):
+    """Remove both the access and refresh token cookies from the response."""
+    response.delete_cookie(ACCESS_TOKEN_COOKIE_NAME, samesite=AUTH_COOKIE_SAMESITE)
+    response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, samesite=AUTH_COOKIE_SAMESITE)
+
+
 def _set_cookie(response, name, value):
     """Write a single HTTP-only auth cookie with the shared security flags."""
     response.set_cookie(

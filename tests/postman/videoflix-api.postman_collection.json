@@ -286,7 +286,10 @@
               "  pm.expect(setCookieHeaders).to.include('access_token=');",
               "  pm.expect(setCookieHeaders).to.include('refresh_token=');",
               "  pm.expect(setCookieHeaders).to.include('HttpOnly');",
-              "});"
+              "});",
+              "",
+              "const refreshMatch = setCookieHeaders.match(/refresh_token=([^;]+)/);",
+              "pm.collectionVariables.set('capturedRefreshToken', refreshMatch[1]);"
             ]
           }
         }
@@ -337,6 +340,95 @@
               "  pm.expect(setCookieHeaders).to.include('access_token=');",
               "  pm.expect(setCookieHeaders).to.include('HttpOnly');",
               "  pm.expect(setCookieHeaders).to.not.include('refresh_token=');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Logout user",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/logout/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "logout",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "const setCookieHeaders = pm.response.headers",
+              "  .all()",
+              "  .filter((header) => header.key.toLowerCase() === 'set-cookie')",
+              "  .map((header) => header.value)",
+              "  .join('; ');",
+              "",
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('confirms logout', function () {",
+              "  pm.expect(body.detail).to.eql(",
+              "    'Logout successful! All tokens will be deleted. Refresh token is now invalid.'",
+              "  );",
+              "});",
+              "",
+              "pm.test('clears both auth cookies', function () {",
+              "  pm.expect(setCookieHeaders).to.include('access_token=');",
+              "  pm.expect(setCookieHeaders).to.include('refresh_token=');",
+              "  pm.expect(setCookieHeaders.toLowerCase()).to.include('max-age=0');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh token after logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "refresh_token={{capturedRefreshToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/token/refresh/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "token",
+            "refresh",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 401 Unauthorized for a blacklisted refresh token', function () {",
+              "  pm.response.to.have.status(401);",
               "});"
             ]
           }
