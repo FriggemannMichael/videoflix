@@ -40,6 +40,17 @@ class RegistrationSerializer(serializers.Serializer):
         )
 
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Validate the email format for a password reset request.
+
+    Deliberately does not check whether the email belongs to an existing
+    user: the view must respond identically either way to avoid leaking
+    which addresses are registered.
+    """
+
+    email = serializers.EmailField()
+
+
 class LoginSerializer(serializers.Serializer):
     """Validate login credentials by email and expose the authenticated user."""
 

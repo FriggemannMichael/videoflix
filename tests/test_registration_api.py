@@ -48,6 +48,7 @@ def test_register_sends_activation_email(api_client, valid_payload, settings):
     assert email.subject
     assert token in email.body
     assert 'http://localhost:5500/pages/auth/activate.html?uid=' in email.body
+    assert f'&token={token}' in email.body
     html_body = email.alternatives[0][0]
     assert token in html_body
 

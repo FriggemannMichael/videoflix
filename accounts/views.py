@@ -16,8 +16,12 @@ from accounts.cookies import (
     set_access_token_cookie,
     set_auth_cookies,
 )
-from accounts.emails import send_activation_email
-from accounts.serializers import LoginSerializer, RegistrationSerializer
+from accounts.emails import send_activation_email, send_password_reset_email
+from accounts.serializers import (
+    LoginSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+)
 
 
 class RegisterView(APIView):
@@ -144,3 +148,26 @@ class TokenRefreshView(APIView):
         response = Response({'detail': 'Token refreshed', 'access': access_token})
         set_access_token_cookie(response, access_token)
         return response
+
+
+PASSWORD_RESET_SENT_DETAIL = 'An email has been sent to reset your password.'
+
+
+class PasswordResetRequestView(APIView):
+    """Send a password reset email without revealing whether the address exists."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        self._send_reset_email_if_user_exists(request, email)
+        return Response({'detail': PASSWORD_RESET_SENT_DETAIL})
+
+    @staticmethod
+    def _send_reset_email_if_user_exists(request, email):
+        user = get_user_model().objects.filter(email__iexact=email).first()
+        if user is not None:
+            token = default_token_generator.make_token(user)
+            send_password_reset_email(request, user, token)
