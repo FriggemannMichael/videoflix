@@ -89,6 +89,18 @@ def test_login_with_unknown_email_returns_400(api_client):
 
 
 @pytest.mark.django_db
+def test_login_rejects_invalid_email_format(api_client):
+    response = api_client.post(
+        reverse('login'),
+        {'email': 'not-an-email', 'password': 'irrelevant'},
+        format='json',
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'access_token' not in response.cookies
+
+
+@pytest.mark.django_db
 def test_login_with_inactive_account_returns_400(api_client):
     get_user_model().objects.create_user(
         username='pending@example.com',
