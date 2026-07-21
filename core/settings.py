@@ -23,6 +23,8 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5500')
 
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
+
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend'
 )

@@ -1,4 +1,4 @@
-Hi,
+{% autoescape off %}Hi,
 
 Thank you for registering with Videoflix. To complete your registration
 and verify your email address, please open the link below:
@@ -9,3 +9,4 @@ If you did not create an account with us, please disregard this email.
 
 Best regards,
 Your Videoflix Team
+{% endautoescape %}
