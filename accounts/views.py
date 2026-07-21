@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.db import transaction
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
@@ -26,9 +27,10 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        token = default_token_generator.make_token(user)
-        send_activation_email(request, user, token)
+        with transaction.atomic():
+            user = serializer.save()
+            token = default_token_generator.make_token(user)
+            send_activation_email(request, user, token)
         return Response(
             {'user': {'id': user.id, 'email': user.email}, 'token': token},
             status=status.HTTP_201_CREATED,

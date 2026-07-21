@@ -98,3 +98,19 @@ def test_register_rejects_weak_password(api_client, valid_payload):
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert not get_user_model().objects.filter(email='new-user@example.com').exists()
+
+
+@pytest.mark.django_db
+def test_register_rolls_back_user_when_activation_email_fails(
+    api_client, valid_payload, monkeypatch
+):
+    def raise_smtp_error(request, user, token):
+        raise RuntimeError('SMTP connection failed')
+
+    monkeypatch.setattr('accounts.views.send_activation_email', raise_smtp_error)
+
+    with pytest.raises(RuntimeError):
+        api_client.post(reverse('register'), valid_payload, format='json')
+
+    assert not get_user_model().objects.filter(email='new-user@example.com').exists()
+    assert len(mail.outbox) == 0
