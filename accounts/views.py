@@ -82,6 +82,11 @@ class LoginView(APIView):
         return response
 
 
+LOGOUT_SUCCESS_DETAIL = (
+    'Logout successful! All tokens will be deleted. Refresh token is now invalid.'
+)
+
+
 class LogoutView(APIView):
     """Blacklist the refresh token and clear both auth cookies."""
 
@@ -94,6 +99,10 @@ class LogoutView(APIView):
                 {'detail': 'Refresh token is missing.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        return self._logout_response(raw_token)
+
+    @staticmethod
+    def _logout_response(raw_token):
         try:
             RefreshToken(raw_token).blacklist()
         except TokenError:
@@ -101,14 +110,7 @@ class LogoutView(APIView):
                 {'detail': 'Invalid or expired refresh token.'},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        response = Response(
-            {
-                'detail': (
-                    'Logout successful! All tokens will be deleted. '
-                    'Refresh token is now invalid.'
-                )
-            }
-        )
+        response = Response({'detail': LOGOUT_SUCCESS_DETAIL})
         delete_auth_cookies(response)
         return response
 
