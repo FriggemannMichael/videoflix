@@ -320,6 +320,55 @@
       ]
     },
     {
+      "name": "Password confirm rejects invalid token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"new_password\": \"Another-str0ng-pass!\",\n  \"confirm_password\": \"Another-str0ng-pass!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/password_confirm/{{uid}}/not-a-real-token/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "password_confirm",
+            "{{uid}}",
+            "not-a-real-token",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 400 Bad Request', function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('returns the documented invalid-link detail', function () {",
+              "  pm.expect(pm.response.json()).to.eql({",
+              "    detail: 'This password reset link is invalid or has expired.'",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Login user",
       "request": {
         "method": "POST",

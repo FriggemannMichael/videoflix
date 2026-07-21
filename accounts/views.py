@@ -19,6 +19,7 @@ from accounts.cookies import (
 from accounts.emails import send_activation_email, send_password_reset_email
 from accounts.serializers import (
     LoginSerializer,
+    PasswordConfirmSerializer,
     PasswordResetRequestSerializer,
     RegistrationSerializer,
 )
@@ -171,3 +172,39 @@ class PasswordResetRequestView(APIView):
         if user is not None:
             token = default_token_generator.make_token(user)
             send_password_reset_email(request, user, token)
+
+
+PASSWORD_RESET_CONFIRMED_DETAIL = 'Your Password has been successfully reset.'
+PASSWORD_RESET_INVALID_DETAIL = 'This password reset link is invalid or has expired.'
+
+
+class PasswordConfirmView(APIView):
+    """Set a new password from a valid password reset link."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        user = self._get_user(uidb64)
+        if user is None or not default_token_generator.check_token(user, token):
+            return Response(
+                {'detail': PASSWORD_RESET_INVALID_DETAIL},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return self._reset_password(user, request.data)
+
+    @staticmethod
+    def _get_user(uidb64):
+        user_model = get_user_model()
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            return user_model.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, user_model.DoesNotExist):
+            return None
+
+    @staticmethod
+    def _reset_password(user, data):
+        serializer = PasswordConfirmSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        user.set_password(serializer.validated_data['new_password'])
+        user.save(update_fields=['password'])
+        return Response({'detail': PASSWORD_RESET_CONFIRMED_DETAIL})
