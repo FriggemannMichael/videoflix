@@ -76,7 +76,9 @@ def test_register_rejects_duplicate_email(api_client, valid_payload):
     response = api_client.post(reverse('register'), valid_payload, format='json')
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'email' in response.json()
+    body = response.json()
+    assert body == {'email': ['Please check your input and try again.']}
+    assert 'already exists' not in str(body).lower()
 
 
 @pytest.mark.django_db
