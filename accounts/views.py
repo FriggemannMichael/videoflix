@@ -1,8 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -16,13 +13,14 @@ from accounts.cookies import (
     set_access_token_cookie,
     set_auth_cookies,
 )
-from accounts.emails import send_activation_email, send_password_reset_email
+from accounts.emails import send_activation_email
 from accounts.serializers import (
     LoginSerializer,
     PasswordConfirmSerializer,
     PasswordResetRequestSerializer,
     RegistrationSerializer,
 )
+from accounts.utils import get_user_from_uidb64, send_reset_email_if_user_exists
 
 
 class RegisterView(APIView):
@@ -49,7 +47,7 @@ class ActivateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
-        user = self._get_user(uidb64)
+        user = get_user_from_uidb64(uidb64)
         if user is None or not default_token_generator.check_token(user, token):
             return Response(
                 {'detail': 'Activation failed. The link may be invalid or expired.'},
@@ -58,15 +56,6 @@ class ActivateView(APIView):
         user.is_active = True
         user.save(update_fields=['is_active'])
         return Response({'message': 'Account successfully activated.'})
-
-    @staticmethod
-    def _get_user(uidb64):
-        user_model = get_user_model()
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            return user_model.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, user_model.DoesNotExist):
-            return None
 
 
 class LoginView(APIView):
@@ -163,15 +152,8 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-        self._send_reset_email_if_user_exists(request, email)
+        send_reset_email_if_user_exists(request, email)
         return Response({'detail': PASSWORD_RESET_SENT_DETAIL})
-
-    @staticmethod
-    def _send_reset_email_if_user_exists(request, email):
-        user = get_user_model().objects.filter(email__iexact=email).first()
-        if user is not None:
-            token = default_token_generator.make_token(user)
-            send_password_reset_email(request, user, token)
 
 
 PASSWORD_RESET_CONFIRMED_DETAIL = 'Your Password has been successfully reset.'
@@ -184,22 +166,13 @@ class PasswordConfirmView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
-        user = self._get_user(uidb64)
+        user = get_user_from_uidb64(uidb64)
         if user is None or not default_token_generator.check_token(user, token):
             return Response(
                 {'detail': PASSWORD_RESET_INVALID_DETAIL},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return self._reset_password(user, request.data)
-
-    @staticmethod
-    def _get_user(uidb64):
-        user_model = get_user_model()
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            return user_model.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, user_model.DoesNotExist):
-            return None
 
     @staticmethod
     def _reset_password(user, data):
