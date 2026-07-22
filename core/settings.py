@@ -23,6 +23,9 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5500')
 
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+CORS_ALLOW_CREDENTIALS = True
+
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
 
 EMAIL_BACKEND = os.environ.get(
@@ -46,14 +49,22 @@ INSTALLED_APPS = [
     'django_rq',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
     'accounts',
     'videos',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.CookieJWTAuthentication',
+    ],
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

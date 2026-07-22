@@ -63,6 +63,38 @@
       ]
     },
     {
+      "name": "List videos without authentication",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/video/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "video",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 401 Unauthorized', function () {",
+              "  pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Refresh token without cookie",
       "request": {
         "method": "POST",
@@ -430,6 +462,52 @@
               "",
               "const refreshMatch = setCookieHeaders.match(/refresh_token=([^;]+)/);",
               "pm.collectionVariables.set('capturedRefreshToken', refreshMatch[1]);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List videos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/video/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "video",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "",
+              "pm.test('returns 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns a list of videos', function () {",
+              "  pm.expect(body).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('each video has the documented fields', function () {",
+              "  body.forEach((video) => {",
+              "    pm.expect(video).to.have.all.keys(",
+              "      'id', 'created_at', 'title', 'description', 'thumbnail_url', 'category'",
+              "    );",
+              "  });",
+              "});"
             ]
           }
         }
