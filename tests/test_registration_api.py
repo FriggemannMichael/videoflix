@@ -82,14 +82,26 @@ def test_register_rejects_duplicate_email(api_client, valid_payload):
 
 
 @pytest.mark.django_db
-def test_register_rejects_declined_privacy_policy(api_client, valid_payload):
+def test_register_works_without_privacy_policy(api_client, valid_payload):
+    """The documented request body does not contain a privacy policy flag."""
+    del valid_payload['privacy_policy']
+
+    response = api_client.post(reverse('register'), valid_payload, format='json')
+
+    assert response.status_code == status.HTTP_201_CREATED
+    user = get_user_model().objects.get(email='new-user@example.com')
+    assert user.privacy_policy_accepted_at is None
+
+
+@pytest.mark.django_db
+def test_register_does_not_record_declined_privacy_policy(api_client, valid_payload):
     valid_payload['privacy_policy'] = False
 
     response = api_client.post(reverse('register'), valid_payload, format='json')
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'privacy_policy' in response.json()
-    assert not get_user_model().objects.filter(email='new-user@example.com').exists()
+    assert response.status_code == status.HTTP_201_CREATED
+    user = get_user_model().objects.get(email='new-user@example.com')
+    assert user.privacy_policy_accepted_at is None
 
 
 @pytest.mark.django_db

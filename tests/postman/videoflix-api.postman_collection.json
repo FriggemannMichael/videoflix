@@ -221,6 +221,59 @@
       ]
     },
     {
+      "name": "Register with documented request body",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{documentedEmail}}\",\n  \"password\": \"{{password}}\",\n  \"confirmed_password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/register/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "register",
+            ""
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;",
+              "pm.collectionVariables.set(",
+              "  'documentedEmail', `ci_documented_${suffix}@example.com`",
+              ");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 201 Created without a privacy policy flag', function () {",
+              "  pm.response.to.have.status(201);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Activate user",
       "request": {
         "method": "GET",

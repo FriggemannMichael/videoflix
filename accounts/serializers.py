@@ -10,16 +10,11 @@ class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     confirmed_password = serializers.CharField(write_only=True)
-    privacy_policy = serializers.BooleanField()
+    privacy_policy = serializers.BooleanField(required=False, default=False)
 
     def validate_email(self, value):
         if get_user_model().objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError('Please check your input and try again.')
-        return value
-
-    def validate_privacy_policy(self, value):
-        if not value:
-            raise serializers.ValidationError('You must accept the privacy policy.')
         return value
 
     def validate(self, attrs):
@@ -31,12 +26,13 @@ class RegistrationSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
+        accepted_at = timezone.now() if validated_data['privacy_policy'] else None
         return get_user_model().objects.create_user(
             username=validated_data['email'],
             email=validated_data['email'],
             password=validated_data['password'],
             is_active=False,
-            privacy_policy_accepted_at=timezone.now(),
+            privacy_policy_accepted_at=accepted_at,
         )
 
 
