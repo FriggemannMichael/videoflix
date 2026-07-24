@@ -5,11 +5,13 @@ from pathlib import Path
 from django.conf import settings
 from django.core.files import File
 
+from videos.hls import RESOLUTIONS, hls_directory
 from videos.models import Video
+
+__all__ = ['RESOLUTIONS', 'convert_to_hls', 'generate_thumbnail']
 
 THUMBNAIL_TIMESTAMP = '00:00:01'
 
-RESOLUTIONS = ('480p', '720p', '1080p')
 RESOLUTION_HEIGHTS = {'480p': 480, '720p': 720, '1080p': 1080}
 HLS_ENCODE_ARGS = [
     '-c:v',
@@ -84,7 +86,7 @@ def convert_to_hls(video_id):
 
 def _convert_resolution(video, resolution):
     """Produce the HLS playlist and segments for a single resolution."""
-    output_dir = _hls_output_dir(video.pk, resolution)
+    output_dir = hls_directory(video.pk, resolution)
     output_dir.mkdir(parents=True, exist_ok=True)
     playlist = output_dir / 'index.m3u8'
     subprocess.run(
@@ -93,11 +95,6 @@ def _convert_resolution(video, resolution):
         capture_output=True,
     )
     _verify_output(output_dir, playlist)
-
-
-def _hls_output_dir(video_id, resolution):
-    """Return the directory holding the HLS files for a resolution."""
-    return Path(settings.MEDIA_ROOT) / 'videos' / 'hls' / str(video_id) / resolution
 
 
 def _hls_command(source, resolution, output_dir, playlist):
