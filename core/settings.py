@@ -1,6 +1,7 @@
 """Django settings for the core project."""
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -60,6 +61,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'accounts.authentication.CookieJWTAuthentication',
     ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(
+        minutes=int(os.environ.get('ACCESS_TOKEN_LIFETIME_MINUTES', default=60))
+    ),
 }
 
 MIDDLEWARE = [
