@@ -1,8 +1,10 @@
+import django_rq
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from videos.cache import invalidate_video_list_cache
 from videos.models import Video
+from videos.tasks import generate_thumbnail
 
 
 @receiver(post_save, sender=Video)
@@ -10,3 +12,11 @@ from videos.models import Video
 def clear_video_list_cache(sender, instance, **kwargs):
     """Invalidate the cached video list whenever a video changes."""
     invalidate_video_list_cache()
+
+
+@receiver(post_save, sender=Video, dispatch_uid='videos.enqueue_thumbnail')
+def enqueue_thumbnail(sender, instance, created, **kwargs):
+    """Queue thumbnail generation in the background for newly uploaded videos."""
+    if not created:
+        return
+    django_rq.get_queue('default').enqueue(generate_thumbnail, instance.id)
