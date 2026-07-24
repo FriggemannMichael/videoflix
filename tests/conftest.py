@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 from django.core.cache import cache
 
@@ -8,3 +10,11 @@ def clear_cache():
     cache.clear()
     yield
     cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def mock_rq_queue(monkeypatch):
+    """Replace the RQ queue so tests never touch a real Redis queue backend."""
+    queue = MagicMock()
+    monkeypatch.setattr('django_rq.get_queue', lambda *args, **kwargs: queue)
+    return queue
