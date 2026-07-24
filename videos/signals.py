@@ -4,7 +4,7 @@ from django.dispatch import receiver
 
 from videos.cache import invalidate_video_list_cache
 from videos.models import Video
-from videos.tasks import generate_thumbnail
+from videos.tasks import convert_to_hls, generate_thumbnail
 
 
 @receiver(post_save, sender=Video)
@@ -20,3 +20,11 @@ def enqueue_thumbnail(sender, instance, created, **kwargs):
     if not created:
         return
     django_rq.get_queue('default').enqueue(generate_thumbnail, instance.id)
+
+
+@receiver(post_save, sender=Video, dispatch_uid='videos.enqueue_hls')
+def enqueue_hls_conversion(sender, instance, created, **kwargs):
+    """Queue HLS conversion in the background for newly uploaded videos."""
+    if not created:
+        return
+    django_rq.get_queue('default').enqueue(convert_to_hls, instance.id)

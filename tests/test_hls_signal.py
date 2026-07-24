@@ -2,7 +2,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from videos.models import Video
-from videos.tasks import generate_thumbnail
+from videos.tasks import convert_to_hls
 
 pytestmark = pytest.mark.django_db
 
@@ -25,13 +25,13 @@ def _create_video(**overrides):
     return Video.objects.create(**defaults)
 
 
-def test_creating_video_enqueues_thumbnail_task(mock_rq_queue):
+def test_creating_video_enqueues_hls_conversion_task(mock_rq_queue):
     video = _create_video()
 
-    mock_rq_queue.enqueue.assert_any_call(generate_thumbnail, video.id)
+    mock_rq_queue.enqueue.assert_any_call(convert_to_hls, video.id)
 
 
-def test_updating_video_does_not_enqueue_thumbnail_task(mock_rq_queue):
+def test_updating_video_does_not_enqueue_hls_conversion_task(mock_rq_queue):
     video = _create_video()
     mock_rq_queue.enqueue.reset_mock()
 
