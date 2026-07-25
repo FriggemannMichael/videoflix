@@ -9,3 +9,5 @@ class VideoAdmin(admin.ModelAdmin):
 
     list_display = ('title', 'category', 'processing_status', 'created_at')
     list_filter = ('category', 'processing_status')
+    # The conversion pipeline owns these fields, so they must not be editable.
+    readonly_fields = ('processing_status', 'processing_error')
