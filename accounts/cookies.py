@@ -1,8 +1,8 @@
+from django.conf import settings
+
 ACCESS_TOKEN_COOKIE_NAME = 'access_token'
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 AUTH_COOKIE_HTTP_ONLY = True
-AUTH_COOKIE_SAMESITE = 'Lax'
-AUTH_COOKIE_SECURE = False
 
 
 def set_auth_cookies(response, access_token, refresh_token):
@@ -18,8 +18,9 @@ def set_access_token_cookie(response, access_token):
 
 def delete_auth_cookies(response):
     """Remove both the access and refresh token cookies from the response."""
-    response.delete_cookie(ACCESS_TOKEN_COOKIE_NAME, samesite=AUTH_COOKIE_SAMESITE)
-    response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, samesite=AUTH_COOKIE_SAMESITE)
+    samesite = settings.AUTH_COOKIE_SAMESITE
+    response.delete_cookie(ACCESS_TOKEN_COOKIE_NAME, samesite=samesite)
+    response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, samesite=samesite)
 
 
 def _set_cookie(response, name, value):
@@ -28,6 +29,6 @@ def _set_cookie(response, name, value):
         name,
         value,
         httponly=AUTH_COOKIE_HTTP_ONLY,
-        samesite=AUTH_COOKIE_SAMESITE,
-        secure=AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
+        secure=settings.AUTH_COOKIE_SECURE,
     )
