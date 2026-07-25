@@ -48,6 +48,23 @@ def test_generate_thumbnail_saves_a_thumbnail(monkeypatch):
     assert video.processing_status != Video.ProcessingStatus.FAILED
 
 
+def test_generate_thumbnail_extracts_a_single_frame(monkeypatch):
+    video = _create_video()
+    calls = {}
+
+    def _capture(command, *args, **kwargs):
+        calls['command'] = command
+        return _write_frame(command, *args, **kwargs)
+
+    monkeypatch.setattr('videos.tasks.subprocess.run', _capture)
+
+    generate_thumbnail(video.id)
+
+    command = calls['command']
+    assert command[command.index('-frames:v') + 1] == '1'
+    assert video.original_file.path in command
+
+
 def test_generate_thumbnail_uses_a_safe_subprocess_call(monkeypatch):
     video = _create_video()
     calls = {}

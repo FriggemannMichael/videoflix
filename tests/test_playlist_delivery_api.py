@@ -92,8 +92,16 @@ def test_unknown_movie_id_returns_404(authenticated_client):
     assert response.status_code == 404
 
 
-def test_video_not_yet_ready_returns_404(authenticated_client):
-    video = _create_video(status=Video.ProcessingStatus.PROCESSING)
+@pytest.mark.parametrize(
+    'status',
+    [
+        Video.ProcessingStatus.PENDING,
+        Video.ProcessingStatus.PROCESSING,
+        Video.ProcessingStatus.FAILED,
+    ],
+)
+def test_video_not_ready_returns_404(authenticated_client, status):
+    video = _create_video(status=status)
     _write_playlist(video, '480p')
 
     response = authenticated_client.get(_url(video.id, '480p'))
