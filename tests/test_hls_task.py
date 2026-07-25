@@ -5,7 +5,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from videos.models import Video
-from videos.tasks import RESOLUTIONS, convert_to_hls
+from videos.tasks import RESOLUTION_HEIGHTS, RESOLUTIONS, convert_to_hls
 
 pytestmark = pytest.mark.django_db
 
@@ -54,6 +54,29 @@ def test_convert_to_hls_creates_playlists_and_segments(monkeypatch, tmp_path, se
         base = _hls_dir(tmp_path, video, resolution)
         assert (base / 'index.m3u8').exists()
         assert list(base.glob('*.ts'))
+
+
+def test_convert_to_hls_scales_each_resolution_to_its_height(
+    monkeypatch, tmp_path, settings
+):
+    settings.MEDIA_ROOT = tmp_path
+    video = _create_video()
+    commands = []
+
+    def _capture(command, *args, **kwargs):
+        commands.append(' '.join(command))
+        return _fake_hls(command, *args, **kwargs)
+
+    monkeypatch.setattr('videos.tasks.subprocess.run', _capture)
+
+    convert_to_hls(video.id)
+
+    for resolution in RESOLUTIONS:
+        height = RESOLUTION_HEIGHTS[resolution]
+        assert any(
+            f'scale=-2:{height}' in cmd and f'/{resolution}/' in cmd for cmd in commands
+        )
+    assert all('%03d.ts' in cmd and cmd.endswith('index.m3u8') for cmd in commands)
 
 
 def test_convert_to_hls_uses_a_safe_subprocess_call(monkeypatch, tmp_path, settings):
