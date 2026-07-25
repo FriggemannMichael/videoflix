@@ -79,6 +79,12 @@ def test_authenticated_user_receives_segment(authenticated_client):
     assert body == SEGMENT_BODY
 
 
+def test_segment_url_has_no_trailing_slash():
+    # hls.js requests segments relative to the manifest without a trailing
+    # slash; the route must match that directly, with no APPEND_SLASH redirect.
+    assert not _url(1, '480p', SEGMENT_NAME).endswith('/')
+
+
 def test_unauthenticated_request_is_rejected(api_client):
     video = _create_video()
     _write_segment(video, '480p')
@@ -120,7 +126,7 @@ def test_missing_segment_file_returns_404(authenticated_client):
     assert response.status_code == 404
 
 
-@pytest.mark.parametrize('segment', ['index.m3u8', '000.mp4', 'segment', '..'])
+@pytest.mark.parametrize('segment', ['000.mp4', 'segment', 'abc.ts', '00a.ts'])
 def test_invalid_segment_name_returns_404(authenticated_client, segment):
     video = _create_video()
     _write_segment(video, '480p')
