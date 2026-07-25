@@ -1,3 +1,11 @@
+"""Signal receivers that react to changes on a video.
+
+Saving a new video is what starts the pipeline: the receivers below queue the
+thumbnail and the HLS conversion, and every save or delete drops the cached
+video list. Note that signals do not fire for ``bulk_create()`` or
+``QuerySet.update()``, so the background jobs have to call ``save()``.
+"""
+
 import django_rq
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver

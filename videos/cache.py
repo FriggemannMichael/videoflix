@@ -1,3 +1,10 @@
+"""Caching of the video list payload.
+
+The dashboard requests the same list on every page load while the catalogue
+changes rarely, so the serialized payload is cached in Redis and dropped by
+the signal receivers whenever a video changes.
+"""
+
 from django.core.cache import cache
 
 VIDEO_LIST_CACHE_KEY = 'video_list'

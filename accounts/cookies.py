@@ -1,3 +1,11 @@
+"""Reading and writing the JWT auth cookies.
+
+The API never returns tokens for the frontend to store. Both the access and
+the refresh token travel in HTTP-only cookies instead, so no script can read
+them. Their ``SameSite`` and ``Secure`` flags come from the settings because
+the frontend runs on a different host than the API.
+"""
+
 from django.conf import settings
 
 ACCESS_TOKEN_COOKIE_NAME = 'access_token'
