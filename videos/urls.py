@@ -10,7 +10,7 @@ urlpatterns = [
         name='video_playlist',
     ),
     path(
-        'video/<int:movie_id>/<str:resolution>/<str:segment>/',
+        'video/<int:movie_id>/<str:resolution>/<str:segment>',
         SegmentView.as_view(),
         name='video_segment',
     ),
