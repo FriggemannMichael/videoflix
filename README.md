@@ -40,26 +40,15 @@ uv run python manage.py runserver
 
 There is no public deployment — Videoflix is submitted as a backend-only
 GitHub repository. To experience it end to end, run the stack above and serve
-the course-provided frontend against the API. Either host name works:
-`http://localhost:5500` and `http://127.0.0.1:5500` are both allowed origins.
+the course-provided frontend against the API. Because the JWT auth cookies are
+`SameSite=Lax`, open the frontend on the **same host** as the API (e.g. both on
+`127.0.0.1`), otherwise the cookies are treated as cross-site and are not sent.
 
 ```bash
-python -m http.server 5500 --directory ../videoflix-frontend
-# then open http://localhost:5500 or http://127.0.0.1:5500
+# example: serve the provided frontend on the same host as the API
+python -m http.server 5500 --bind 127.0.0.1 --directory ../videoflix-frontend
+# then open http://127.0.0.1:5500
 ```
-
-The frontend hardcodes the API as `http://127.0.0.1:8000/api/`, so serving it
-from `localhost` makes every API call cross-site. The auth cookies are
-therefore issued with `SameSite=None; Secure`, which browsers accept over plain
-HTTP on trustworthy origins (`localhost` and `127.0.0.1`) and over HTTPS
-everywhere else. If you deploy the frontend on the same site as the API, you
-can tighten this via `AUTH_COOKIE_SAMESITE=Lax` and `AUTH_COOKIE_SECURE`.
-
-Because `SameSite` can no longer block forged cross-site writes,
-`core.middleware.TrustedOriginMiddleware` takes over that job: any
-state-changing request whose `Origin` header is not an allowed origin is
-rejected with 403. Browsers always send that header and scripts cannot forge
-it, while non-browser clients such as Postman send none and are unaffected.
 
 ## Features
 

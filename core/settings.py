@@ -24,25 +24,8 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5500')
 
-# The frontend may be opened on either host name, so both are allowed by
-# default and the configured FRONTEND_URL is always included.
-CORS_ALLOWED_ORIGINS = list(
-    dict.fromkeys(
-        os.environ.get(
-            'CORS_ALLOWED_ORIGINS',
-            default='http://localhost:5500,http://127.0.0.1:5500',
-        ).split(',')
-        + [FRONTEND_URL]
-    )
-)
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
 CORS_ALLOW_CREDENTIALS = True
-
-# The provided frontend hardcodes the API host as 127.0.0.1:8000 while being
-# served from localhost:5500, so the auth cookies must survive a cross-site
-# request. 'None' requires 'Secure', which browsers also accept over plain HTTP
-# on trustworthy origins (localhost / 127.0.0.1).
-AUTH_COOKIE_SAMESITE = os.environ.get('AUTH_COOKIE_SAMESITE', default='None')
-AUTH_COOKIE_SECURE = os.environ.get('AUTH_COOKIE_SECURE', default='True') == 'True'
 
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
 
@@ -89,7 +72,6 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'core.middleware.TrustedOriginMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
