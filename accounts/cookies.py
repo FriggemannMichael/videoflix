@@ -1,3 +1,12 @@
+"""Reading and writing the JWT auth cookies.
+
+The API never returns tokens for the frontend to store. Both the access and
+the refresh token travel in HTTP-only cookies instead, so no script can read
+them. ``SameSite=Lax`` keeps the browser from attaching them to cross-site
+requests, which means the frontend has to be served from the same host as the
+API.
+"""
+
 ACCESS_TOKEN_COOKIE_NAME = 'access_token'
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 AUTH_COOKIE_HTTP_ONLY = True

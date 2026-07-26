@@ -1,3 +1,5 @@
+"""Serializers for the video API."""
+
 from rest_framework import serializers
 
 from videos.models import Video
@@ -9,6 +11,8 @@ class VideoListSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
+        """Expose only the fields the dashboard renders."""
+
         model = Video
         fields = (
             'id',
@@ -20,6 +24,11 @@ class VideoListSerializer(serializers.ModelSerializer):
         )
 
     def get_thumbnail_url(self, video):
+        """Return an absolute thumbnail URL, or None while none exists yet.
+
+        The URL has to be absolute because the frontend is served from a
+        different host than the API.
+        """
         if not video.thumbnail:
             return None
         request = self.context.get('request')

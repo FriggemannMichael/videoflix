@@ -1,3 +1,9 @@
+"""URL routes for registration, login, logout, and password recovery.
+
+These paths are included under ``/api/`` and match the endpoint documentation
+the provided frontend calls.
+"""
+
 from django.urls import path
 
 from accounts.views import (
