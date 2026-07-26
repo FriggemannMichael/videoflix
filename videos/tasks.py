@@ -1,3 +1,11 @@
+"""Background jobs that turn an uploaded file into streamable video.
+
+Both jobs run in an RQ worker and shell out to FFmpeg with an argument list
+rather than a command string, so no filename can be interpreted as a shell
+command. A failing job records the reason on the video and re-raises, which
+lets the worker mark the job as failed instead of swallowing the error.
+"""
+
 import subprocess
 import tempfile
 from pathlib import Path
