@@ -1,9 +1,3 @@
-"""Layout of the HLS files on disk.
-
-Single source of truth for where the conversion writes its output and where
-the delivery views read it from, so both sides cannot drift apart.
-"""
-
 import re
 from pathlib import Path
 

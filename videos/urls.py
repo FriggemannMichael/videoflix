@@ -1,9 +1,3 @@
-"""URL routes for the video list and for HLS delivery.
-
-The playlist and segment paths carry no trailing slash because the players
-request the segments relative to the playlist, exactly as written in it.
-"""
-
 from django.urls import path
 
 from videos.views import PlaylistView, SegmentView, VideoListView

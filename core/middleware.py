@@ -23,11 +23,9 @@ class TrustedOriginMiddleware:
     """Reject state-changing browser requests from an untrusted origin."""
 
     def __init__(self, get_response):
-        """Store the next handler in the middleware chain."""
         self.get_response = get_response
 
     def __call__(self, request):
-        """Pass the request on, or answer 403 for an untrusted origin."""
         if not self.is_trusted(request):
             return JsonResponse({'detail': 'Origin not allowed.'}, status=403)
         return self.get_response(request)

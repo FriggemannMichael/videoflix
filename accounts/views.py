@@ -1,10 +1,3 @@
-"""API views for registration, login, logout, and password recovery.
-
-Every view returns a response and delegates the rest to serializers, to
-``accounts.utils``, and to ``accounts.cookies``. Tokens are never handed to
-the client in a readable form; they are set as HTTP-only cookies.
-"""
-
 from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from rest_framework import status
@@ -31,17 +24,11 @@ from accounts.utils import get_user_from_uidb64, send_reset_email_if_user_exists
 
 
 class RegisterView(APIView):
-    """Create inactive users from public registration requests.
-
-    Creating the user and sending the activation mail share one transaction:
-    a failing mail server rolls the user back instead of leaving behind an
-    account that nobody can ever activate.
-    """
+    """Create inactive users from public registration requests."""
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Register the account and mail its activation link."""
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
@@ -60,7 +47,6 @@ class ActivateView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
-        """Activate the account if the link is intact and still valid."""
         user = get_user_from_uidb64(uidb64)
         if user is None or not default_token_generator.check_token(user, token):
             return Response(
@@ -78,7 +64,6 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Log the user in and hand out both tokens as cookies."""
         serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
@@ -104,11 +89,6 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Revoke the refresh token from the cookie and clear both cookies.
-
-        Without that cookie there is nothing to revoke, so the request is
-        rejected as a bad request.
-        """
         raw_token = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
         if raw_token is None:
             return Response(
@@ -119,7 +99,6 @@ class LogoutView(APIView):
 
     @staticmethod
     def _logout_response(raw_token):
-        """Blacklist the refresh token and clear the cookies."""
         try:
             RefreshToken(raw_token).blacklist()
         except TokenError:
@@ -133,17 +112,11 @@ class LogoutView(APIView):
 
 
 class TokenRefreshView(APIView):
-    """Issue a new access token from the refresh token cookie.
-
-    Answers with an explicit 401 rather than raising: DRF turns an
-    authentication exception into a 403 unless the first authenticator sends
-    a ``WWW-Authenticate`` header, which cookie authentication does not.
-    """
+    """Issue a new access token from the refresh token cookie."""
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Exchange the refresh token cookie for a fresh access token."""
         raw_token = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
         if raw_token is None:
             return Response(
@@ -154,7 +127,6 @@ class TokenRefreshView(APIView):
 
     @staticmethod
     def _refreshed_response(raw_token):
-        """Answer with a new access token, also set as a cookie."""
         try:
             refresh = RefreshToken(raw_token)
         except TokenError:
@@ -177,7 +149,6 @@ class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Answer identically whether or not the address is registered."""
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
@@ -195,7 +166,6 @@ class PasswordConfirmView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
-        """Set the new password once the reset link checks out."""
         user = get_user_from_uidb64(uidb64)
         if user is None or not default_token_generator.check_token(user, token):
             return Response(
@@ -206,7 +176,6 @@ class PasswordConfirmView(APIView):
 
     @staticmethod
     def _reset_password(user, data):
-        """Store the new password, which also invalidates the used link."""
         serializer = PasswordConfirmSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.validated_data['new_password'])

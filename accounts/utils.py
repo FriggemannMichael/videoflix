@@ -1,9 +1,3 @@
-"""Helpers shared by the account views.
-
-Kept out of ``views.py`` so that module contains only views returning a
-response.
-"""
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str

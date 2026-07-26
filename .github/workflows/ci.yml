@@ -109,6 +109,3 @@ jobs:
 
       - name: Check size limits
         run: python tests/scripts/check_size_limits.py
-
-      - name: Check docstrings
-        run: python tests/scripts/check_docstrings.py

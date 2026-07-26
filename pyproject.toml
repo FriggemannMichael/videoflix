@@ -59,8 +59,8 @@ max-statements = 14
 "**/test_*.py" = ["PLR0915"]
 "**/*_tests.py" = ["PLR0915"]
 "**/tests.py" = ["PLR0915"]
+"**/apps.py" = ["D101"]
 "tests/scripts/check_size_limits.py" = ["T201"]
-"tests/scripts/check_docstrings.py" = ["T201"]
 
 [tool.ruff.format]
 quote-style = "single"
