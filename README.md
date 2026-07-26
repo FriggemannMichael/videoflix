@@ -23,6 +23,20 @@ docker compose up --build
 - API base: `http://127.0.0.1:8000/api/`
 - Django admin: `http://127.0.0.1:8000/admin/`
 
+> **Serve the frontend from `127.0.0.1`, not from `localhost`.**
+>
+> ```bash
+> python -m http.server 5500 --bind 127.0.0.1 --directory ../videoflix-frontend
+> # then open http://127.0.0.1:5500
+> ```
+>
+> The provided frontend calls the API at `http://127.0.0.1:8000/api/`, and the
+> auth cookies are `SameSite=Lax`. Opening the frontend on `localhost:5500`
+> makes the browser treat every API call as cross-site and drop the login
+> cookie: the login still answers 200 and redirects, but the dashboard stays
+> empty and reports a missing authorisation. On `127.0.0.1:5500` both sides
+> share a host and everything works.
+
 ### Local development (without Docker)
 
 The project uses [uv](https://docs.astral.sh/uv/). Running the app still needs
