@@ -23,6 +23,29 @@ docker compose up --build
 - API base: `http://127.0.0.1:8000/api/`
 - Django admin: `http://127.0.0.1:8000/admin/`
 
+### Email
+
+Registration and password reset send an email, so `EMAIL_HOST`,
+`EMAIL_HOST_USER`, and `EMAIL_HOST_PASSWORD` are required values, not optional
+ones. Replace their placeholders in `.env` with a real SMTP server before
+registering a user. Leaving them as shipped makes registration fail: the
+account and its activation email are created in one transaction, so an
+unreachable mail server rolls the account back instead of leaving behind one
+that can never be activated.
+
+To try the project without a mail server, add `EMAIL_BACKEND` to `.env`:
+
+```bash
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
+Django then writes the emails to the container log, where the activation link
+can be read directly:
+
+```bash
+docker compose logs web | grep activate.html
+```
+
 ### Local development (without Docker)
 
 The project uses [uv](https://docs.astral.sh/uv/). Running the app still needs

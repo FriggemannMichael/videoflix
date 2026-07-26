@@ -19,7 +19,7 @@ DEBUG = os.environ.get('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', default='localhost').split(',')
 CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS', default='http://localhost:4200'
+    'CSRF_TRUSTED_ORIGINS', default='http://localhost:5500'
 ).split(',')
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5500')

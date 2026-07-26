@@ -6,7 +6,7 @@ Das GitHub-Repository ist erstellt und lokal geklont. Die Backend-Implementierun
 
 ## Externe Vorgaben
 
-- Docker-Dateien: `git@github.com:Developer-Akademie-Backendkurs/material.videoflix-docker-files.git`
+- Docker-Dateien: `claude`
 - Frontend: `git@github.com:Developer-Akademie-Backendkurs/project.Videoflix.git`
 - Endpoint-Dokumentation: `https://cdn.developerakademie.com/courses/Backend/EndpointDoku/index.html?name=videoflix`
 - Original-Checkliste: `docs/Videoflix Checkliste.md`
