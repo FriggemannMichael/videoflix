@@ -6,7 +6,7 @@ the provided frontend calls.
 
 from django.urls import path
 
-from accounts.views import (
+from accounts.api.views import (
     ActivateView,
     LoginView,
     LogoutView,

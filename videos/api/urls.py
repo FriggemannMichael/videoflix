@@ -6,7 +6,7 @@ request the segments relative to the playlist, exactly as written in it.
 
 from django.urls import path
 
-from videos.views import PlaylistView, SegmentView, VideoListView
+from videos.api.views import PlaylistView, SegmentView, VideoListView
 
 urlpatterns = [
     path('video/', VideoListView.as_view(), name='video_list'),

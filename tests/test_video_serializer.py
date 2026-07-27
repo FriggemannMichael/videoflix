@@ -1,7 +1,7 @@
 import pytest
 
+from videos.api.serializers import VideoListSerializer
 from videos.models import Video
-from videos.serializers import VideoListSerializer
 
 pytestmark = pytest.mark.django_db
 

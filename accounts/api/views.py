@@ -14,6 +14,12 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from accounts.api.serializers import (
+    LoginSerializer,
+    PasswordConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+)
 from accounts.cookies import (
     REFRESH_TOKEN_COOKIE_NAME,
     delete_auth_cookies,
@@ -21,12 +27,6 @@ from accounts.cookies import (
     set_auth_cookies,
 )
 from accounts.emails import send_activation_email
-from accounts.serializers import (
-    LoginSerializer,
-    PasswordConfirmSerializer,
-    PasswordResetRequestSerializer,
-    RegistrationSerializer,
-)
 from accounts.utils import get_user_from_uidb64, send_reset_email_if_user_exists
 
 
