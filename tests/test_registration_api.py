@@ -132,7 +132,7 @@ def test_register_rolls_back_user_when_activation_email_fails(
     def raise_smtp_error(request, user, token):
         raise RuntimeError('SMTP connection failed')
 
-    monkeypatch.setattr('accounts.views.send_activation_email', raise_smtp_error)
+    monkeypatch.setattr('accounts.api.views.send_activation_email', raise_smtp_error)
 
     with pytest.raises(RuntimeError):
         api_client.post(reverse('register'), valid_payload, format='json')

@@ -22,8 +22,8 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('accounts.urls')),
-    path('api/', include('videos.urls')),
+    path('api/', include('accounts.api.urls')),
+    path('api/', include('videos.api.urls')),
 ]
 
 if settings.DEBUG:  # pragma: no cover

@@ -12,10 +12,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from videos.api.serializers import VideoListSerializer
 from videos.cache import get_cached_video_list, set_cached_video_list
 from videos.hls import RESOLUTIONS, SEGMENT_PATTERN, playlist_path, segment_path
 from videos.models import Video
-from videos.serializers import VideoListSerializer
 
 PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl'
 SEGMENT_CONTENT_TYPE = 'video/mp2t'
