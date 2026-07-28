@@ -59,21 +59,30 @@ EMAIL_HOST_PASSWORD=...
 DEFAULT_FROM_EMAIL=...
 ```
 
-The last two of the first group look alike and usually hold the same value, but
-they answer different questions: `CORS_ALLOWED_ORIGINS` decides which origin a
-browser may call the API from, while `FRONTEND_EMAIL_LINK_URL` only builds the
-links inside the activation and password reset mails.
+> ### ⚠️ Registration fails until the email settings are real
+>
+> This is the one thing a fresh clone gets wrong. The template ships the SMTP
+> backend and placeholder credentials, so `POST /api/register/` cannot resolve
+> `smtp.example.com` and answers **500** — the account is rolled back with it.
+>
+> **The frontend blames the wrong thing.** It reports every failure as
+> *"must accept the privacy policy to continue"*, even with the box ticked, so
+> the message sends you looking in the wrong place. If registration will not go
+> through, check this first.
+>
+> Either enter real SMTP credentials under `EMAIL_HOST` and friends, or print
+> the mails to the container log instead:
+>
+> ```bash
+> EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+> ```
+>
+> The activation and reset links are then in `docker compose logs web`.
 
-**The email settings are not optional.** The template ships the SMTP backend, so
-left on the placeholder credentials, registration cannot reach
-`smtp.example.com` and the request answers 500. No half-created account is left
-behind — creating the user and sending the mail share one transaction — but
-registering is impossible. Either enter real SMTP credentials, or print the
-mails to the container log instead:
-
-```bash
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-```
+The last two variables of the first group look alike and usually hold the same
+value, but they answer different questions: `CORS_ALLOWED_ORIGINS` decides which
+origin a browser may call the API from, while `FRONTEND_EMAIL_LINK_URL` only
+builds the links inside the activation and password reset mails.
 
 > **Serve the frontend from `127.0.0.1:5500`, not from `localhost:5500`.**
 >
