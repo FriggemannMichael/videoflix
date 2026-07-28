@@ -18,14 +18,14 @@ def build_activation_link(user, token):
     """Build the frontend URL that activates the given user's account."""
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     path = f'/pages/auth/activate.html?uid={uidb64}&token={token}'
-    return f'{settings.FRONTEND_URL}{path}'
+    return f'{settings.FRONTEND_EMAIL_LINK_URL}{path}'
 
 
 def build_password_reset_link(user, token):
     """Build the frontend URL where the given user can set a new password."""
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     path = f'/pages/auth/confirm_password.html?uid={uidb64}&token={token}'
-    return f'{settings.FRONTEND_URL}{path}'
+    return f'{settings.FRONTEND_EMAIL_LINK_URL}{path}'
 
 
 def _logo_url(request):

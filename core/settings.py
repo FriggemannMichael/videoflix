@@ -22,10 +22,14 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS', default='http://localhost:4200'
 ).split(',')
 
-FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5500')
-
-CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS', default='http://127.0.0.1:5500'
+).split(',')
 CORS_ALLOW_CREDENTIALS = True
+
+FRONTEND_EMAIL_LINK_URL = os.environ.get(
+    'FRONTEND_EMAIL_LINK_URL', default='http://127.0.0.1:5500'
+)
 
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
 
