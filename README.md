@@ -23,6 +23,58 @@ docker compose up --build
 - API base: `http://127.0.0.1:8000/api/`
 - Django admin: `http://127.0.0.1:8000/admin/`
 
+### Environment variables
+
+`cp .env.template .env` brings in every variable the project reads. These are
+the ones that decide whether a fresh clone actually works — the rest can stay
+on their template values.
+
+```bash
+SECRET_KEY=...                                # Django signing key
+DEBUG=True                                    # also serves /media/ locally
+ALLOWED_HOSTS=localhost,127.0.0.1             # hosts the backend answers for
+CSRF_TRUSTED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+CORS_ALLOWED_ORIGINS=http://127.0.0.1:5500    # origin the frontend is served from
+FRONTEND_EMAIL_LINK_URL=http://127.0.0.1:5500 # host the mail links point to
+
+DB_NAME=...                                   # the Postgres container creates the
+DB_USER=...                                   # database from these three, and
+DB_PASSWORD=...                               # Django logs in with them
+DB_HOST=db                                    # compose service names
+DB_PORT=5432
+
+REDIS_LOCATION=redis://redis:6379/1           # cache
+REDIS_HOST=redis                              # RQ queue
+REDIS_PORT=6379
+REDIS_DB=0
+
+DJANGO_SUPERUSER_USERNAME=admin               # the entrypoint creates this
+DJANGO_SUPERUSER_PASSWORD=adminpassword       # account on first start
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+
+EMAIL_HOST=smtp.example.com                   # replace with real credentials,
+EMAIL_HOST_USER=...                           # see the note below
+EMAIL_HOST_PASSWORD=...
+DEFAULT_FROM_EMAIL=...
+```
+
+The last two of the first group look alike and usually hold the same value, but
+they answer different questions: `CORS_ALLOWED_ORIGINS` decides which origin a
+browser may call the API from, while `FRONTEND_EMAIL_LINK_URL` only builds the
+links inside the activation and password reset mails.
+
+**The email settings are not optional.** `EMAIL_BACKEND` is not in
+`.env.template`, so the SMTP backend applies by default. Left on the
+placeholders, registration tries to reach `smtp.example.com`, the connection
+fails, and the request answers 500. No half-created account is left behind —
+creating the user and sending the mail share one transaction — but registering
+is impossible. Either enter real SMTP credentials, or print the mails to the
+container log:
+
+```bash
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
 > **Serve the frontend from `127.0.0.1:5500`, not from `localhost:5500`.**
 >
 > The frontend is a separate project — see
