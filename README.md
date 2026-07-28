@@ -52,6 +52,7 @@ DJANGO_SUPERUSER_USERNAME=admin               # the entrypoint creates this
 DJANGO_SUPERUSER_PASSWORD=adminpassword       # account on first start
 DJANGO_SUPERUSER_EMAIL=admin@example.com
 
+EMAIL_BACKEND=...smtp.EmailBackend            # console backend also possible,
 EMAIL_HOST=smtp.example.com                   # replace with real credentials,
 EMAIL_HOST_USER=...                           # see the note below
 EMAIL_HOST_PASSWORD=...
@@ -63,13 +64,12 @@ they answer different questions: `CORS_ALLOWED_ORIGINS` decides which origin a
 browser may call the API from, while `FRONTEND_EMAIL_LINK_URL` only builds the
 links inside the activation and password reset mails.
 
-**The email settings are not optional.** `EMAIL_BACKEND` is not in
-`.env.template`, so the SMTP backend applies by default. Left on the
-placeholders, registration tries to reach `smtp.example.com`, the connection
-fails, and the request answers 500. No half-created account is left behind —
-creating the user and sending the mail share one transaction — but registering
-is impossible. Either enter real SMTP credentials, or print the mails to the
-container log:
+**The email settings are not optional.** The template ships the SMTP backend, so
+left on the placeholder credentials, registration cannot reach
+`smtp.example.com` and the request answers 500. No half-created account is left
+behind — creating the user and sending the mail share one transaction — but
+registering is impossible. Either enter real SMTP credentials, or print the
+mails to the container log instead:
 
 ```bash
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
