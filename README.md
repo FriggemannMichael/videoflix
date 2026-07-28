@@ -23,19 +23,19 @@ docker compose up --build
 - API base: `http://127.0.0.1:8000/api/`
 - Django admin: `http://127.0.0.1:8000/admin/`
 
-> **Serve the frontend from `127.0.0.1`, not from `localhost`.**
+> **Serve the frontend from `127.0.0.1:5500`, not from `localhost:5500`.**
 >
-> ```bash
-> python -m http.server 5500 --bind 127.0.0.1 --directory ../videoflix-frontend
-> # then open http://127.0.0.1:5500
-> ```
+> The frontend is a separate project — see
+> [project.Videoflix](https://github.com/Developer-Akademie-Backendkurs/project.Videoflix)
+> for how to start it.
 >
-> The provided frontend calls the API at `http://127.0.0.1:8000/api/`, and the
-> auth cookies are `SameSite=Lax`. Opening the frontend on `localhost:5500`
-> makes the browser treat every API call as cross-site and drop the login
-> cookie: the login still answers 200 and redirects, but the dashboard stays
-> empty and reports a missing authorisation. On `127.0.0.1:5500` both sides
-> share a host and everything works.
+> It calls the API at `http://127.0.0.1:8000/api/`, and the auth cookies are
+> `SameSite=Lax`. Served from `localhost:5500`, the browser treats every API
+> call as cross-site: the origin is not in `CORS_ALLOWED_ORIGINS`, so the
+> request is rejected, and even if the origin were allowed the login cookie
+> would still be dropped. On `127.0.0.1:5500` both sides share a host and
+> everything works — which is why it is the default of both
+> `CORS_ALLOWED_ORIGINS` and `FRONTEND_EMAIL_LINK_URL`.
 
 ### Local development (without Docker)
 
@@ -54,15 +54,9 @@ uv run python manage.py runserver
 
 There is no public deployment — Videoflix is submitted as a backend-only
 GitHub repository. To experience it end to end, run the stack above and serve
-the course-provided frontend against the API. Because the JWT auth cookies are
-`SameSite=Lax`, open the frontend on the **same host** as the API (e.g. both on
-`127.0.0.1`), otherwise the cookies are treated as cross-site and are not sent.
-
-```bash
-# example: serve the provided frontend on the same host as the API
-python -m http.server 5500 --bind 127.0.0.1 --directory ../videoflix-frontend
-# then open http://127.0.0.1:5500
-```
+the [frontend](https://github.com/Developer-Akademie-Backendkurs/project.Videoflix)
+against it on `http://127.0.0.1:5500`, for the reason described in the setup
+section.
 
 ## Features
 
