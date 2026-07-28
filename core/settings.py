@@ -17,19 +17,21 @@ SECRET_KEY = os.getenv(
 
 DEBUG = os.environ.get('DEBUG', default='True') == 'True'
 
+# Host the activation and password reset links point to.
+FRONTEND_EMAIL_LINK_URL = os.environ.get(
+    'FRONTEND_EMAIL_LINK_URL', default='http://127.0.0.1:5500'
+)
+
+# Who may reach this backend: the hosts it answers for, and the frontend
+# origins a browser may call it from.
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', default='localhost').split(',')
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS', default='http://localhost:4200'
 ).split(',')
-
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS', default='http://127.0.0.1:5500'
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
-
-FRONTEND_EMAIL_LINK_URL = os.environ.get(
-    'FRONTEND_EMAIL_LINK_URL', default='http://127.0.0.1:5500'
-)
 
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
 
