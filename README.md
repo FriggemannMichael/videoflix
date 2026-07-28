@@ -23,6 +23,13 @@ docker compose up --build
 - API base: `http://127.0.0.1:8000/api/`
 - Django admin: `http://127.0.0.1:8000/admin/`
 
+****A fresh install contains no videos.** Until the first one is uploaded, the
+dashboard shows *"Oops... there are no videos!"* in red. That is the empty list
+being rendered, not an error — there is no public upload endpoint, so the
+catalogue is filled in the Django admin under *Videos → Add video*. The
+thumbnail and the HLS renditions are generated in the background, and the video
+appears on the dashboard once its status reaches `completed`.
+
 ### Environment variables
 
 `cp .env.template .env` brings in every variable the project reads. These are
