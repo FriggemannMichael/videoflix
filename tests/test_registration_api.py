@@ -37,7 +37,7 @@ def test_register_creates_inactive_user(api_client, valid_payload):
 
 @pytest.mark.django_db
 def test_register_sends_activation_email(api_client, valid_payload, settings):
-    settings.FRONTEND_URL = 'http://localhost:5500'
+    settings.FRONTEND_EMAIL_LINK_URL = 'http://127.0.0.1:5500'
 
     response = api_client.post(reverse('register'), valid_payload, format='json')
 
@@ -47,7 +47,7 @@ def test_register_sends_activation_email(api_client, valid_payload, settings):
     assert email.to == ['new-user@example.com']
     assert email.subject
     assert token in email.body
-    assert 'http://localhost:5500/pages/auth/activate.html?uid=' in email.body
+    assert 'http://127.0.0.1:5500/pages/auth/activate.html?uid=' in email.body
     assert f'&token={token}' in email.body
     html_body = email.alternatives[0][0]
     assert token in html_body

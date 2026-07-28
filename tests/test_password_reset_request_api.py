@@ -60,12 +60,12 @@ def test_rejects_invalid_email_format(api_client):
 
 @pytest.mark.django_db
 def test_reset_link_contains_valid_uid_and_token(api_client, existing_user, settings):
-    settings.FRONTEND_URL = 'http://localhost:5500'
+    settings.FRONTEND_EMAIL_LINK_URL = 'http://127.0.0.1:5500'
 
     api_client.post(
         reverse('password_reset'), {'email': 'user@example.com'}, format='json'
     )
 
     email = mail.outbox[0]
-    assert 'http://localhost:5500/pages/auth/confirm_password.html?uid=' in email.body
+    assert 'http://127.0.0.1:5500/pages/auth/confirm_password.html?uid=' in email.body
     assert '&token=' in email.body

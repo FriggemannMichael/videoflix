@@ -70,7 +70,7 @@ Als neuer Benutzer möchte ich mich bei Videoflix registrieren können, um Zugan
 
 Die Userdaten aus der Registrierung sollten einen neuen Nutzer in der Datenbank anlegen. Hier gilt es zu überprüfen, ob der User bereits existiert. Der User ist am Anfang noch nicht aktiv. Es wird dann vom Backend eine Aktivierungsmail mit entsprechendem Link verschickt, um den User aktiv zu schalten. Dieser Link soll entsprechend auf die Front-End-Seite leiten. Das Front-End sorgt für die entsprechende Verarbeitung und Weiterleitung auf das Backend. Es gibt für das Design der Email eine Vorlage im Repo des FrontEnds auf Github.
 
-> ✅ Backend erfüllt: `RegisterView` legt inaktiven User an, prüft Existenz (generische Meldung), verschickt Aktivierungsmail mit Link auf `FRONTEND_URL`; Aktivierung über `GET /api/activate/<uidb64>/<token>/`.
+> ✅ Backend erfüllt: `RegisterView` legt inaktiven User an, prüft Existenz (generische Meldung), verschickt Aktivierungsmail mit Link auf `FRONTEND_EMAIL_LINK_URL`; Aktivierung über `GET /api/activate/<uidb64>/<token>/`.
 
 ### **User Story 2: Benutzeranmeldung**
 
@@ -130,7 +130,7 @@ Als Benutzer möchte ich mein Passwort zurücksetzen können, falls ich es verge
 
 Das Backend bekommt bei klick auf “Passwort vergessen” entsprechende Daten aus dem Front-End. Auch hier soll eine Email vom Backend verschickt werden, die ebenfalls einen Link enthält und auf das Front-End weiterleitet. Das Front-End sorgt für die entsprechende Verarbeitung und Weiterleitung auf das Backend. Es gibt für das Design der Email eine Vorlage im RePo des FrontEnds auf Github. Nach erfolgreicher Passwortänderung wird dieses in der Datenbank gespeichert und das alte gelöscht. Tipp: Schaue im Frontend, welche Parameter du brauchst.
 
-> ✅ Backend erfüllt: Reset-Request ohne Existenz-Preisgabe, E-Mail mit Link auf `FRONTEND_URL`, neues Passwort wird gespeichert; der Link wird durch das Django-Token nach der Änderung automatisch ungültig.
+> ✅ Backend erfüllt: Reset-Request ohne Existenz-Preisgabe, E-Mail mit Link auf `FRONTEND_EMAIL_LINK_URL`, neues Passwort wird gespeichert; der Link wird durch das Django-Token nach der Änderung automatisch ungültig.
 
 3. ## **Funktionale Anforderungen \- Video-Dashboard & Wiedergabe**
 
