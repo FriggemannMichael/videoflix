@@ -5,6 +5,7 @@ Every view returns a response and delegates the rest to serializers, to
 the client in a readable form; they are set as HTTP-only cookies.
 """
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from rest_framework import status
@@ -47,7 +48,7 @@ class RegisterView(APIView):
         with transaction.atomic():
             user = serializer.save()
             token = default_token_generator.make_token(user)
-            send_activation_email(request, user, token)
+            send_activation_email(user, token)
         return Response(
             {'user': {'id': user.id, 'email': user.email}, 'token': token},
             status=status.HTTP_201_CREATED,
@@ -72,16 +73,48 @@ class ActivateView(APIView):
         return Response({'message': 'Account successfully activated.'})
 
 
+LOGIN_FAILED_DETAIL = 'Invalid credentials.'
+
+
 class LoginView(APIView):
-    """Authenticate a user by email and set JWT auth cookies."""
+    """Authenticate a user by email and set JWT auth cookies.
+
+    A well formed payload whose credentials do not match is answered with an
+    explicit 401 rather than a raised authentication exception: DRF turns
+    such an exception into a 403 unless the first authenticator sends a
+    ``WWW-Authenticate`` header, which cookie authentication does not.
+    """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
         """Log the user in and hand out both tokens as cookies."""
-        serializer = LoginSerializer(data=request.data, context={'request': request})
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        user = self._authenticate(request, serializer.validated_data)
+        if user is None:
+            return Response(
+                {'detail': LOGIN_FAILED_DETAIL},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        return self._login_response(user)
+
+    @staticmethod
+    def _authenticate(request, credentials):
+        """Return the user behind the credentials, or None if they do not match.
+
+        Inactive accounts and wrong passwords are both answered with the same
+        generic detail, so the response cannot be used to probe for accounts.
+        """
+        return authenticate(
+            request=request,
+            username=credentials['email'],
+            password=credentials['password'],
+        )
+
+    @staticmethod
+    def _login_response(user):
+        """Answer with the user and set both tokens as cookies."""
         refresh = RefreshToken.for_user(user)
         response = Response(
             {
@@ -181,7 +214,7 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-        send_reset_email_if_user_exists(request, email)
+        send_reset_email_if_user_exists(email)
         return Response({'detail': PASSWORD_RESET_SENT_DETAIL})
 
 

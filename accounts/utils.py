@@ -22,9 +22,9 @@ def get_user_from_uidb64(uidb64):
         return None
 
 
-def send_reset_email_if_user_exists(request, email):
+def send_reset_email_if_user_exists(email):
     """Send a password reset email if the address belongs to a user."""
     user = get_user_model().objects.filter(email__iexact=email).first()
     if user is not None:
         token = default_token_generator.make_token(user)
-        send_password_reset_email(request, user, token)
+        send_password_reset_email(user, token)

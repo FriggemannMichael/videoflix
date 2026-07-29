@@ -129,7 +129,7 @@ def test_register_rejects_invalid_email_format(api_client, valid_payload):
 def test_register_rolls_back_user_when_activation_email_fails(
     api_client, valid_payload, monkeypatch
 ):
-    def raise_smtp_error(request, user, token):
+    def raise_smtp_error(user, token):
         raise RuntimeError('SMTP connection failed')
 
     monkeypatch.setattr('accounts.api.views.send_activation_email', raise_smtp_error)
