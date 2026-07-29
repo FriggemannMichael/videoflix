@@ -779,8 +779,12 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('returns 400 Bad Request', function () {",
-              "  pm.response.to.have.status(400);",
+              "pm.test('returns 401 Unauthorized', function () {",
+              "  pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test('returns the generic invalid-credentials detail', function () {",
+              "  pm.expect(pm.response.json().detail).to.eql('Invalid credentials.');",
               "});",
               "",
               "pm.test('does not set auth cookies', function () {",

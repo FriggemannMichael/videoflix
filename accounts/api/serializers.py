@@ -4,7 +4,7 @@ Error messages are kept deliberately generic where a precise one would reveal
 whether an email address is registered.
 """
 
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from rest_framework import serializers
@@ -73,23 +73,12 @@ class PasswordConfirmSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    """Validate login credentials by email and expose the authenticated user."""
+    """Validate the shape of a login request.
+
+    Deliberately stops at the payload: a malformed one is a 400, but
+    credentials that are well formed and simply do not match are a 401, and
+    only the view can answer with that status.
+    """
 
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
-    def validate(self, attrs):
-        """Authenticate the credentials and attach the user to the data.
-
-        Inactive accounts and wrong passwords both end up here with the same
-        message, so the response cannot be used to probe for accounts.
-        """
-        user = authenticate(
-            request=self.context.get('request'),
-            username=attrs['email'],
-            password=attrs['password'],
-        )
-        if user is None:
-            raise serializers.ValidationError('Invalid credentials.')
-        attrs['user'] = user
-        return attrs

@@ -16,6 +16,15 @@ requests must be sent with credentials.
 | POST | `/password_reset/` | – | Request a password-reset email (identical response for known/unknown addresses). |
 | POST | `/password_confirm/<uidb64>/<token>/` | – | Set a new password via the emailed link. |
 
+### Notes
+
+- `/login/` separates the two failure cases: a malformed payload (missing
+  field, invalid email format) returns 400, while a well formed payload whose
+  credentials do not match returns 401 with `{"detail": "Invalid credentials."}`.
+  Unknown addresses, wrong passwords, and accounts that are not activated yet
+  all share that one generic answer so the endpoint cannot be used to find out
+  which addresses are registered.
+
 ## Videos and HLS
 
 | Method | Path | Auth | Description |

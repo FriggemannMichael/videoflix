@@ -66,30 +66,31 @@ def test_login_cookies_are_httponly(api_client, active_user):
 
 
 @pytest.mark.django_db
-def test_login_with_wrong_password_returns_400(api_client, active_user):
+def test_login_with_wrong_password_returns_401(api_client, active_user):
     response = api_client.post(
         reverse('login'),
         {'email': 'user@example.com', 'password': 'wrong-password'},
         format='json',
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Invalid credentials.'}
     assert 'access_token' not in response.cookies
 
 
 @pytest.mark.django_db
-def test_login_with_unknown_email_returns_400(api_client):
+def test_login_with_unknown_email_returns_401(api_client):
     response = api_client.post(
         reverse('login'),
         {'email': 'nobody@example.com', 'password': 'Str0ng-test-pass!'},
         format='json',
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.django_db
-def test_login_rejects_invalid_email_format(api_client):
+def test_login_rejects_invalid_email_format_with_400(api_client):
     response = api_client.post(
         reverse('login'),
         {'email': 'not-an-email', 'password': 'irrelevant'},
@@ -101,7 +102,17 @@ def test_login_rejects_invalid_email_format(api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_inactive_account_returns_400(api_client):
+def test_login_rejects_missing_password_with_400(api_client, active_user):
+    response = api_client.post(
+        reverse('login'), {'email': 'user@example.com'}, format='json'
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'password' in response.json()
+
+
+@pytest.mark.django_db
+def test_login_with_inactive_account_returns_401(api_client):
     get_user_model().objects.create_user(
         username='pending@example.com',
         email='pending@example.com',
@@ -115,4 +126,5 @@ def test_login_with_inactive_account_returns_400(api_client):
         format='json',
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Invalid credentials.'}
