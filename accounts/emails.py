@@ -4,14 +4,23 @@ Both the activation and the password reset mail are sent as multipart
 messages: a plain text body plus an HTML alternative rendered from the
 templates in ``accounts/templates/accounts/``. The links they contain point
 into the frontend, not the API, because the user finishes the flow there.
+
+The logo travels inside the message as an inline part the HTML references by
+content ID. Linking it as a URL instead would leave the image broken in every
+mail client that cannot reach this backend.
 """
+
+from email.mime.image import MIMEImage
+from pathlib import Path
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.templatetags.static import static
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+LOGO_CID = 'videoflix-logo'
+LOGO_PATH = Path(__file__).resolve().parent / 'static' / 'accounts' / 'img' / 'logo.png'
 
 
 def build_activation_link(user, token):
@@ -28,30 +37,33 @@ def build_password_reset_link(user, token):
     return f'{settings.FRONTEND_EMAIL_LINK_URL}{path}'
 
 
-def _logo_url(request):
-    """Return an absolute URL for the logo, as email clients need one."""
-    return request.build_absolute_uri(static('accounts/img/logo.png'))
+def _inline_logo():
+    """Return the logo as an inline part the HTML body addresses by its CID."""
+    logo = MIMEImage(LOGO_PATH.read_bytes(), _subtype='png')
+    logo.add_header('Content-ID', f'<{LOGO_CID}>')
+    logo.add_header('Content-Disposition', 'inline', filename=LOGO_PATH.name)
+    return logo
 
 
-def _email_context(request, user, token):
+def _email_context(user, token):
     """Build the template context of the activation email."""
     return {
         'activation_link': build_activation_link(user, token),
-        'logo_url': _logo_url(request),
+        'logo_cid': LOGO_CID,
     }
 
 
-def _password_reset_context(request, user, token):
+def _password_reset_context(user, token):
     """Build the template context of the password reset email."""
     return {
         'password_reset_link': build_password_reset_link(user, token),
-        'logo_url': _logo_url(request),
+        'logo_cid': LOGO_CID,
     }
 
 
-def send_activation_email(request, user, token):
+def send_activation_email(user, token):
     """Send the registration email carrying the account activation link."""
-    context = _email_context(request, user, token)
+    context = _email_context(user, token)
     _send_email(
         subject='Confirm your email',
         to=user.email,
@@ -61,9 +73,9 @@ def send_activation_email(request, user, token):
     )
 
 
-def send_password_reset_email(request, user, token):
+def send_password_reset_email(user, token):
     """Send the email carrying the password reset link."""
-    context = _password_reset_context(request, user, token)
+    context = _password_reset_context(user, token)
     _send_email(
         subject='Reset your password',
         to=user.email,
@@ -74,14 +86,15 @@ def send_password_reset_email(request, user, token):
 
 
 def _send_email(subject, to, html_template, text_template, context):
-    """Render both bodies and send them as one multipart message."""
-    html_body = render_to_string(html_template, context)
-    text_body = render_to_string(text_template, context)
+    """Render both bodies and send them as one multipart/related message."""
     email = EmailMultiAlternatives(
         subject=subject,
-        body=text_body,
+        body=render_to_string(text_template, context),
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[to],
     )
-    email.attach_alternative(html_body, 'text/html')
+    email.attach_alternative(render_to_string(html_template, context), 'text/html')
+    # 'related' marks the logo as belonging to the HTML body, not as a download.
+    email.mixed_subtype = 'related'
+    email.attach(_inline_logo())
     email.send()

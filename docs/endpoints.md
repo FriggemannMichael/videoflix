@@ -24,6 +24,9 @@ requests must be sent with credentials.
   Unknown addresses, wrong passwords, and accounts that are not activated yet
   all share that one generic answer so the endpoint cannot be used to find out
   which addresses are registered.
+- The activation and password-reset emails embed the Videoflix logo as an
+  inline part referenced by content ID, so it renders without the mail client
+  having to reach this backend.
 
 ## Videos and HLS
 

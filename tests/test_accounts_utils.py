@@ -1,16 +1,10 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
-from django.test import RequestFactory
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from accounts.utils import get_user_from_uidb64, send_reset_email_if_user_exists
-
-
-@pytest.fixture
-def request_factory():
-    return RequestFactory()
 
 
 @pytest.fixture
@@ -42,19 +36,15 @@ def test_get_user_from_uidb64_returns_none_for_unknown_id():
 
 
 @pytest.mark.django_db
-def test_send_reset_email_if_user_exists_sends_email(request_factory, existing_user):
-    request = request_factory.get('/')
-
-    send_reset_email_if_user_exists(request, 'user@example.com')
+def test_send_reset_email_if_user_exists_sends_email(existing_user):
+    send_reset_email_if_user_exists('user@example.com')
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ['user@example.com']
 
 
 @pytest.mark.django_db
-def test_send_reset_email_if_user_exists_is_a_noop_for_unknown_email(request_factory):
-    request = request_factory.get('/')
-
-    send_reset_email_if_user_exists(request, 'unknown@example.com')
+def test_send_reset_email_if_user_exists_is_a_noop_for_unknown_email():
+    send_reset_email_if_user_exists('unknown@example.com')
 
     assert len(mail.outbox) == 0

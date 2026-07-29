@@ -48,7 +48,7 @@ class RegisterView(APIView):
         with transaction.atomic():
             user = serializer.save()
             token = default_token_generator.make_token(user)
-            send_activation_email(request, user, token)
+            send_activation_email(user, token)
         return Response(
             {'user': {'id': user.id, 'email': user.email}, 'token': token},
             status=status.HTTP_201_CREATED,
@@ -214,7 +214,7 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-        send_reset_email_if_user_exists(request, email)
+        send_reset_email_if_user_exists(email)
         return Response({'detail': PASSWORD_RESET_SENT_DETAIL})
 
 
